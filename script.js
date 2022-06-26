@@ -1,8 +1,10 @@
 // ------------------- GLOBAL VARS ------------------------------------
 let dataT= [];
+let testData= [];
 let year= new Set();
 let rate=  new Set();
 let table = document.getElementById("table1");
+let homocide= document.getElementById('table2')
 let g;
 let y;
 let x;
@@ -40,7 +42,7 @@ function getRandomColor() {
     $("#colorpad").css("background-color", getRandomColor());
   }
 
-function drawChart(x_axis, y_axis){
+function drawChart(x_axis, y_axis, chart_id){
     x_axis_array= Array.from(x_axis);
     y_axis_array= Array.from(y_axis);
     // console.log("this is x axis data" + typeof x_axis_array[2]);
@@ -48,7 +50,7 @@ function drawChart(x_axis, y_axis){
    
 
   
-  svg = d3.select('.bar-chart')
+  svg = d3.select(`${chart_id}`)
       .attr("width", Dimensions.svgWidth)
       .attr("height", Dimensions.svgHeight);
       
@@ -122,40 +124,42 @@ function drawLine(data, labelColor){
 
 //iterates through html table to make an array of objects. Each object contains country name and crime rate and year
 //simultaniously it updates the year and rate sets to have a the years displayed in the y and x axises
-function pullData(){
+function pullData(input_table, target_array, startYear){
 
-for (let i = 2; i < table.rows.length; i++  ){
-    let row= table.rows[i];
+  for (let i = 2; i < input_table.rows.length; i++  ){
+      let row= input_table.rows[i];
+     
+      let tempArray= []
+      let xVal= startYear;
    
-    let tempArray= []
-    let xVal= 2002;
- 
-    for (let j = 2; j< row.cells.length; j++) {
-      
-        let col = row.cells[j]
-        if (col.nodeName == 'TD'){
-           // console.log("outer inner log" + col);
-            tempArray.push({
-                country: row.cells[1].innerText,
-                value: col.innerText,
-                year: xVal++
-            });
-
-            year.add(xVal++);
-            rate.add(parseInt(col.innerText));  
-
-         }   
-    }
-    dataT.push(tempArray);
-}}
+      for (let j = 2; j< row.cells.length; j++) {
+        
+          let col = row.cells[j]
+          if (col.nodeName == 'TD'){
+             // console.log("outer inner log" + col);
+              tempArray.push({
+                  country: row.cells[1].innerText,
+                  value: col.innerText,
+                  year: xVal++
+              });
+  
+              year.add(xVal);
+              rate.add(parseInt(col.innerText));  
+  
+           }   
+      }
+      target_array.push(tempArray);
+  }}
+  
 
 
 //creates labels from data array and assigns id to each button in order to be identified when clicked
-function drawLabels(inputArray, container){
+function drawLabels(inputArray, container_id){
 
     for(let i = 0; i < inputArray.length; i++){
         let row= inputArray[i];
         //row[1].country
+        const container= document.getElementById(`${container_id}`)
         let labelDot = document.createElement('span');
         labelDot.setAttribute("class", "dot");
         labelDot.setAttribute("title", `${row[1].country}`);
@@ -172,47 +176,46 @@ function drawLabels(inputArray, container){
 
 
 
+
+
+
+
+
+
 (()=> {
 
-pullData();   
-
+  pullData(table, dataT, 2000)
+  pullData(homocide, testData, 2007)
+console.log(testData);
 // --------------- FIRST GRAPH ELEMENT--------------------   
+function createGraph(bar_chart_id, graph_container_id, label_container_id, parentNode){
+  let svgOne= document.createElementNS('http://www.w3.org/2000/svg', 'svg')
+  svgOne.setAttribute("class", "bar-chart");
+  svgOne.setAttribute("id", `${bar_chart_id}`);
 
+  let graphContainer= document.createElement('div')
+  graphContainer.setAttribute("class", "graph-container")
+  graphContainer.setAttribute("id", `${graph_container_id}`)
+  graphContainer.style.display= "flex"
+  graphContainer.style.width= '100%'
+  graphContainer.style.height= '80vh';
+  parentNode.before(graphContainer);
+  graphContainer.appendChild(svgOne)
+
+  let labelContainer= document.createElement('div');
+  labelContainer.setAttribute("class", "label-container");
+  labelContainer.setAttribute("id", `${label_container_id}`);
  
-//-------------- TABLE 1 SVG ----------------------------
-let svgOne= document.createElementNS('http://www.w3.org/2000/svg', 'svg')
-svgOne.setAttribute("class", "bar-chart");
-
-let firstHeadline= document.querySelector('.mw-headline');
- let graphContainer= document.createElement('div')
- graphContainer.setAttribute("class", "graph-container")
- graphContainer.style.display= "flex"
- graphContainer.style.width= '100%'
- graphContainer.style.height= '80vh';
- table.before(graphContainer);
- graphContainer.appendChild(svgOne)
-
- //----------------------- labels-------------------------
- 
- let labelContainer= document.createElement('div');
- labelContainer.setAttribute("class", "label-container");
-
- labelContainer.style.display= 'flex';
- labelContainer.style.flexWrap= 'wrap';
- labelContainer.style.width= '200px';
- labelContainer.style.height= '400px';
- labelContainer.style.gap= '5px';
- labelContainer.style.justifyContent= 'center'
- 
- graphContainer.appendChild(labelContainer); //add element to DOM
- drawLabels(dataT,labelContainer);
+  labelContainer.style.display= 'flex';
+  labelContainer.style.flexWrap= 'wrap';
+  labelContainer.style.width= '200px';
+  labelContainer.style.height= '400px';
+  labelContainer.style.gap= '5px';
+  labelContainer.style.justifyContent= 'center'
+  graphContainer.appendChild(labelContainer); //add element to DOM
 
 
-
- 
-
-
- 
+}
 
 let data3= dataT[2]
 let dummy = JSON.stringify(data3.slice(1, data3.length), null, 2   )
@@ -220,22 +223,33 @@ let dummy = JSON.stringify(data3.slice(1, data3.length), null, 2   )
 console.log('this content of data 3 ' + data3[1].year);
 
 
+testElem= document.getElementById("Crimes_et_d.C3.A9lits_enregistr.C3.A9s_par_les_services_de_police")
+
+
+
+createGraph("bar-chart-two", "graphContainer-two", "labelContainer-two", homocide)
+drawChart(year, rate, "#bar-chart-two" )
+drawLabels(dataT,"labelContainer-two");
+
+createGraph("bar-chart", "graphContainer", "labelContainer", testElem )
+drawChart(year, rate, "#bar-chart" )
+drawLabels(dataT,"labelContainer");
+
+
+
+//Once labels have been created by drawLabels() with respective ID's  and color
+//it select the respective country(by id)  and passes the Country object inside array AND and the assigend color
+
 document.querySelectorAll('.dot').forEach(item => {
     item.addEventListener('click', () => {
+      console.log('clicked');
       countryName= document.querySelector('.dot').id
       console.log(typeof item.id);
       let labelId= parseInt(item.id);
-      console.log("this is type" + item.style.backgroundColor);
+      
       drawLine(dataT[labelId],item.style.backgroundColor )
     })
   })
-
-
-
-drawChart(year, rate)
-
-
-
 
 console.log(dataT);
 })();
