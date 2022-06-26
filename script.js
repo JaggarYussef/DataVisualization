@@ -43,14 +43,10 @@ function getRandomColor() {
 function drawChart(x_axis, y_axis){
     x_axis_array= Array.from(x_axis);
     y_axis_array= Array.from(y_axis);
-    console.log("this is x axis data" + x_axis_array);
-    console.log("this is  axis data" + y_axis_array);
+    // console.log("this is x axis data" + typeof x_axis_array[2]);
+     console.log("this is y axis data" + typeof y_axis_array[2]);
    
-   
-  // var svgWidth = 600, svgHeight = 400;
-  // var margin = { top: 20, right: 20, bottom: 30, left: 50 };
-  // var width = svgWidth - margin.left - margin.right;
-  // var height = svgHeight - margin.top - margin.bottom;
+
   
   svg = d3.select('.bar-chart')
       .attr("width", Dimensions.svgWidth)
@@ -60,15 +56,17 @@ function drawChart(x_axis, y_axis){
       .attr("transform", "translate(" + Dimensions.marginLeft + "," + Dimensions.marginTop + ")");
   
    x = d3.scaleTime()
-     // .domain([0, d3.max(data)])
       .rangeRound([0, width]);
   
-   y = d3.scaleLinear()
+   y = d3.scaleLinear()    
       .rangeRound([height, 0]);
+
+      var x_axis_line = d3.axisBottom().scale(x);      
+         
   
 g.append("g")
     .call(d3.axisBottom(x))
-    .attr("transform", "translate(0," + height + ")")
+    .attr("transform", "translate(0," + Dimensions.svgWidth + ")")
     .attr("fill", "#000")
     .attr("x", 6)
     .attr("dy", "0.71em")
@@ -85,6 +83,14 @@ g.append("g")
     .attr("dy", "0.71em")
     .attr("text-anchor", "end")
     .text("Crimes recorded");
+
+    var xAxisTranslate = Dimensions.svgHeight - 20;
+
+
+         
+    svg.append("g")
+    .attr("transform", "translate(50, " + xAxisTranslate  +")")
+    .call(x_axis_line);    
  
 }    
 
@@ -114,7 +120,8 @@ function drawLine(data, labelColor){
  
  
 
-
+//iterates through html table to make an array of objects. Each object contains country name and crime rate and year
+//simultaniously it updates the year and rate sets to have a the years displayed in the y and x axises
 function pullData(){
 
 for (let i = 2; i < table.rows.length; i++  ){
@@ -135,7 +142,7 @@ for (let i = 2; i < table.rows.length; i++  ){
             });
 
             year.add(xVal++);
-            rate.add(col.innerText);  
+            rate.add(parseInt(col.innerText));  
 
          }   
     }
@@ -143,6 +150,7 @@ for (let i = 2; i < table.rows.length; i++  ){
 }}
 
 
+//creates labels from data array and assigns id to each button in order to be identified when clicked
 function drawLabels(inputArray, container){
 
     for(let i = 0; i < inputArray.length; i++){
