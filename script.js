@@ -1,4 +1,5 @@
 // ------------------- GLOBAL VARS ------------------------------------
+const link= "https://canvasjs.com/services/data/datapoints.php"
 let dataT= [];
 let testData= [];
 let year= new Set();
@@ -154,7 +155,7 @@ function pullData(input_table, target_array, startYear){
 
 
 //creates labels from data array and assigns id to each button in order to be identified when clicked
-function drawLabels(inputArray, container_id){
+function drawLabels(inputArray, container_id, target){
 
     for(let i = 0; i < inputArray.length; i++){
         let row= inputArray[i];
@@ -163,7 +164,7 @@ function drawLabels(inputArray, container_id){
         let labelDot = document.createElement('span');
         labelDot.setAttribute("class", "dot");
         labelDot.setAttribute("title", `${row[1].country}`);
-        labelDot.setAttribute("id", `${i}`)
+        labelDot.setAttribute("id", `${target}${i}`)
         labelDot.style.height= '18px';
         labelDot.style.width= '18px';
         labelDot.style.backgroundColor= getRandomColor();
@@ -175,18 +176,6 @@ function drawLabels(inputArray, container_id){
 
 
 
-
-
-
-
-
-
-
-(()=> {
-
-  pullData(table, dataT, 2000)
-  pullData(homocide, testData, 2007)
-console.log(testData);
 // --------------- FIRST GRAPH ELEMENT--------------------   
 function createGraph(bar_chart_id, graph_container_id, label_container_id, parentNode){
   let svgOne= document.createElementNS('http://www.w3.org/2000/svg', 'svg')
@@ -217,10 +206,45 @@ function createGraph(bar_chart_id, graph_container_id, label_container_id, paren
 
 }
 
-let data3= dataT[2]
-let dummy = JSON.stringify(data3.slice(1, data3.length), null, 2   )
 
-console.log('this content of data 3 ' + data3[1].year);
+// document.addEventListener("DOMContentLoaded", function(event) {
+//   fetch(link)
+//       .then(function(response) { return response.json(); })
+//       .then(function(data) {
+//           var parsedData = parseData(data);
+//           drawChart(parsedData);
+//       })
+//       .catch(function(err) { console.log(err); })
+//   });
+  
+//   /**
+//    * Parse data into key-value pairs
+//    * @param {object} data Object containing historical data of BPI
+//    */
+//   function parseData(data) {
+//       var arr = [];
+//       for (var i in data.bpi) {
+//           arr.push({
+//               date: new Date(i), //date
+//               value: +data.bpi[i] //convert string to number
+//           });
+//       }
+//       return arr;
+//   }
+  
+
+
+
+(()=> {
+
+  pullData(table, dataT, 2000)
+  pullData(homocide, testData, 2007)
+  console.log(testData);
+
+
+// let data3= dataT[2]
+// let dummy = JSON.stringify(data3.slice(1, data3.length), null, 2   )
+// console.log('this content of data 3 ' + data3[1].year);
 
 
 testElem= document.getElementById("Crimes_et_d.C3.A9lits_enregistr.C3.A9s_par_les_services_de_police")
@@ -229,11 +253,11 @@ testElem= document.getElementById("Crimes_et_d.C3.A9lits_enregistr.C3.A9s_par_le
 
 createGraph("bar-chart-two", "graphContainer-two", "labelContainer-two", homocide)
 drawChart(year, rate, "#bar-chart-two" )
-drawLabels(dataT,"labelContainer-two");
+drawLabels(testData,"labelContainer-two", "h");
 
 createGraph("bar-chart", "graphContainer", "labelContainer", testElem )
 drawChart(year, rate, "#bar-chart" )
-drawLabels(dataT,"labelContainer");
+drawLabels(dataT,"labelContainer", "c");
 
 
 
@@ -244,10 +268,20 @@ document.querySelectorAll('.dot').forEach(item => {
     item.addEventListener('click', () => {
       console.log('clicked');
       countryName= document.querySelector('.dot').id
-      console.log(typeof item.id);
-      let labelId= parseInt(item.id);
       
-      drawLine(dataT[labelId],item.style.backgroundColor )
+      let itemId= item.id
+      const prefix= itemId.slice(0,1)
+      const suffix= itemId.slice(1,2)
+      console.log(prefix);
+      let labelId= parseInt(suffix); //if the datatype is not correct in this variable it can be the reason we see the "uncaught type error t is undefined in d3 package"
+      
+      if (prefix == 'h'){
+        drawLine(testData[labelId],item.style.backgroundColor )
+      }
+      if(prefix == 'c'){
+        drawLine(dataT[labelId],item.style.backgroundColor )
+      }
+     
     })
   })
 
