@@ -5,11 +5,9 @@ let testData= [];
 let year= new Set();
 let rate=  new Set();
 let table = document.getElementById("table1");
-let homocide= document.getElementById('table2')
-let g;
-let y;
-let x;
-let line;
+let homicide= document.getElementById('table2')
+
+
  //global dimensions for each SVG container 
 Dimensions = {
     svgWidth: 600,
@@ -43,85 +41,106 @@ function getRandomColor() {
     $("#colorpad").css("background-color", getRandomColor());
   }
 
-function drawChart(x_axis, y_axis, chart_id){
-    x_axis_array= Array.from(x_axis);
-    y_axis_array= Array.from(y_axis);
+function drawChart(chart_id, data, labelColor){
+ 
+    // x_axis_array= Array.from(x_axis);
+    // y_axis_array= Array.from(y_axis);
     // console.log("this is x axis data" + typeof x_axis_array[2]);
-     console.log("this is y axis data" + typeof y_axis_array[2]);
+     //console.log("this is y axis data" + typeof y_axis_array[2]);
+ svg = d3.select(`${chart_id}`)
+     .attr("width", Dimensions.svgWidth)
+     .attr("height", Dimensions.svgHeight);
+     
+ g = svg.append("g")
+     .attr("transform", "translate(" + Dimensions.marginLeft + "," + Dimensions.marginTop + ")");
+ 
+ x = d3.scaleTime()
+     .rangeRound([0, width]);
+ 
+ y = d3.scaleLinear()    
+     .rangeRound([height, 0]);
+
+     var x_axis_line = d3.axisBottom().scale(x);      
+       
+ 
+g.append("g")
+   .call(d3.axisBottom(x))
+   .attr("transform", "translate(0," + Dimensions.svgWidth + ")")
+   .attr("fill", "#000")
+   .attr("x", 6)
+   .attr("dy", "0.71em")
+   .attr("text-anchor", "end")
+   .select(".domain")
+   .remove();
+
+g.append("g")
+   .call(d3.axisLeft(y))
+   .append("text")
+   .attr("fill", "#000")
+   .attr("transform", "rotate(-90)")
+   .attr("y", 6)
+   .attr("dy", "0.71em")
+   .attr("text-anchor", "end")
+   .text("Crimes recorded");
+
+   var xAxisTranslate = Dimensions.svgHeight - 20;
+
+
+       
+   svg.append("g")
+   .attr("transform", "translate(50, " + xAxisTranslate  +")")
+   .call(x_axis_line);    
+
+
+
+ 
+
+    function drawLine(data_param, labelColor_param){
+      console.log(data);
+     
+      line = d3.line()
+
+     .x(function(d) { return x(d.year)})
+     .y(function(d) { 
+      console.log("this value " + parseInt(d.value));
+      return y(parseInt(d.value))})
+     x.domain(d3.extent(data, function(d) {   
+          return  d.year;
+          console.log("works");
+          }));
+     
+     y.domain(d3.extent(data, function(d) {
+      //   console.log(" this id date frim inside y " + d.value);    
+         return parseInt(d.value) }));
+     
+     
+     
+     g.append("path")
+         .datum(data)
+         .attr("fill", "none")
+         .attr("stroke", `${labelColor}`)
+         .attr("stroke-linejoin", "round")
+         .attr("stroke-linecap", "round")
+         .attr("stroke-width", 3)
+         .attr("d", line);
+
+
+    
+     }
+
+     if(data != null && labelColor != null){
+     
+      drawLine(data, labelColor);
+     }
    
+     
+     
 
-  
-  svg = d3.select(`${chart_id}`)
-      .attr("width", Dimensions.svgWidth)
-      .attr("height", Dimensions.svgHeight);
-      
-   g = svg.append("g")
-      .attr("transform", "translate(" + Dimensions.marginLeft + "," + Dimensions.marginTop + ")");
-  
-   x = d3.scaleTime()
-      .rangeRound([0, width]);
-  
-   y = d3.scaleLinear()    
-      .rangeRound([height, 0]);
-
-      var x_axis_line = d3.axisBottom().scale(x);      
-         
-  
-g.append("g")
-    .call(d3.axisBottom(x))
-    .attr("transform", "translate(0," + Dimensions.svgWidth + ")")
-    .attr("fill", "#000")
-    .attr("x", 6)
-    .attr("dy", "0.71em")
-    .attr("text-anchor", "end")
-    .select(".domain")
-    .remove();
-
-g.append("g")
-    .call(d3.axisLeft(y))
-    .append("text")
-    .attr("fill", "#000")
-    .attr("transform", "rotate(-90)")
-    .attr("y", 6)
-    .attr("dy", "0.71em")
-    .attr("text-anchor", "end")
-    .text("Crimes recorded");
-
-    var xAxisTranslate = Dimensions.svgHeight - 20;
-
-
-         
-    svg.append("g")
-    .attr("transform", "translate(50, " + xAxisTranslate  +")")
-    .call(x_axis_line);    
+    
  
 }    
 
-function drawLine(data, labelColor){
-  line = d3.line()
- .x(function(d) { return x(d.year)})
- .y(function(d) { return y(parseInt(d.value))})
- x.domain(d3.extent(data, function(d) {   
-      return  d.year;
-      }));
- 
- y.domain(d3.extent(data, function(d) {
-  //   console.log(" this id date frim inside y " + d.value);    
-     return parseInt(d.value) }));
- 
- 
- 
- g.append("path")
-     .datum(data)
-     .attr("fill", "none")
-     .attr("stroke", `${labelColor}`)
-     .attr("stroke-linejoin", "round")
-     .attr("stroke-linecap", "round")
-     .attr("stroke-width", 3)
-     .attr("d", line);
- }
- 
- 
+
 
 //iterates through html table to make an array of objects. Each object contains country name and crime rate and year
 //simultaniously it updates the year and rate sets to have a the years displayed in the y and x axises
@@ -207,30 +226,30 @@ function createGraph(bar_chart_id, graph_container_id, label_container_id, paren
 }
 
 
-// document.addEventListener("DOMContentLoaded", function(event) {
-//   fetch(link)
-//       .then(function(response) { return response.json(); })
-//       .then(function(data) {
-//           var parsedData = parseData(data);
-//           drawChart(parsedData);
-//       })
-//       .catch(function(err) { console.log(err); })
-//   });
+document.addEventListener("DOMContentLoaded", function(event) {
+  fetch(link)
+      .then(function(response) { return response.json(); })
+      .then(function(data) {
+          var parsedData = parseData(data);
+          console.log("this is parsed data " + parsedData);;
+      })
+      .catch(function(err) { console.log(err); })
+  });
   
-//   /**
-//    * Parse data into key-value pairs
-//    * @param {object} data Object containing historical data of BPI
-//    */
-//   function parseData(data) {
-//       var arr = [];
-//       for (var i in data.bpi) {
-//           arr.push({
-//               date: new Date(i), //date
-//               value: +data.bpi[i] //convert string to number
-//           });
-//       }
-//       return arr;
-//   }
+  /**
+   * Parse data into key-value pairs
+   * @param {object} data Object containing historical data of BPI
+   */
+  function parseData(data) {
+      var arr = [];
+      for (var i in data.bpi) {
+          arr.push({
+              date: new Date(i), //date
+              value: +data.bpi[i] //convert string to number
+          });
+      }
+      return arr;
+  }
   
 
 
@@ -238,7 +257,7 @@ function createGraph(bar_chart_id, graph_container_id, label_container_id, paren
 (()=> {
 
   pullData(table, dataT, 2000)
-  pullData(homocide, testData, 2007)
+  pullData(homicide, testData, 2007)
   console.log(testData);
 
 
@@ -251,13 +270,13 @@ testElem= document.getElementById("Crimes_et_d.C3.A9lits_enregistr.C3.A9s_par_le
 
 
 
-createGraph("bar-chart-two", "graphContainer-two", "labelContainer-two", homocide)
-drawChart(year, rate, "#bar-chart-two" )
+createGraph("bar-chart-two", "graphContainer-two", "labelContainer-two", homicide)
+drawChart("#bar-chart-two", null, null )
 drawLabels(testData,"labelContainer-two", "h");
 
-createGraph("bar-chart", "graphContainer", "labelContainer", testElem )
-drawChart(year, rate, "#bar-chart" )
-drawLabels(dataT,"labelContainer", "c");
+// createGraph("bar-chart", "graphContainer", "labelContainer", testElem )
+// drawChart("#bar-chart", null, null )
+// drawLabels(dataT,"labelContainer", "c");
 
 
 
@@ -276,10 +295,11 @@ document.querySelectorAll('.dot').forEach(item => {
       let labelId= parseInt(suffix); //if the datatype is not correct in this variable it can be the reason we see the "uncaught type error t is undefined in d3 package"
       
       if (prefix == 'h'){
-        drawLine(testData[labelId],item.style.backgroundColor )
+      //  drawLine(testData[labelId],item.style.backgroundColor )
+        drawChart("bar-chart-two", testData[labelId],item.style.backgroundColor)
       }
       if(prefix == 'c'){
-        drawLine(dataT[labelId],item.style.backgroundColor )
+        drawChart("bar-chart", dataT[labelId],item.style.backgroundColor)
       }
      
     })
